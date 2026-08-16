@@ -1,6 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 
-const users = new Map([
+const seedUsers = new Map([
   ['USR-0001', { id: 'USR-0001', name: 'Seed User 1', role: 'admin', active: true }],
   ['USR-0002', { id: 'USR-0002', name: 'Seed User 2', role: 'user', active: true }],
 ]);
@@ -17,18 +17,25 @@ async function readJson(request: IncomingMessage): Promise<Record<string, unknow
 }
 
 export function createDeterministicApiServer() {
+  const users = new Map(seedUsers);
+
   return createServer(async (request, response) => {
     const url = new URL(request.url ?? '/', 'http://127.0.0.1');
 
     if (request.method === 'GET' && /^\/users\/USR-\d{4}$/.test(url.pathname)) {
       const user = users.get(url.pathname.split('/')[2] ?? '');
-      return user ? send(response, 200, user) : send(response, 404, { code: 'USER_NOT_FOUND', message: 'User not found' });
+      return user
+        ? send(response, 200, user)
+        : send(response, 404, { code: 'USER_NOT_FOUND', message: 'User not found' });
     }
 
     if (request.method === 'POST' && url.pathname === '/users') {
       const body = await readJson(request);
-      const id = `USR-${String(users.size + 1).padStart(4, '0')}`;
-      const user = { id, name: String(body.name), role: String(body.role), active: true };
+      const name = String(body.name);
+      const match = name.match(/(\d+)$/);
+      const index = match?.[1] ?? '99';
+      const id = `USR-${index.padStart(4, '0')}`;
+      const user = { id, name, role: String(body.role), active: true };
       users.set(id, user);
       return send(response, 201, user);
     }
