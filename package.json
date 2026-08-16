@@ -16,7 +16,7 @@
     "format": "npx prettier --write .",
     "codegen:api": "openapi-ts -c api-contract-kit/hey-api.config.ts",
     "test:contract-kit": "playwright test api-contract-kit/tests",
-    "ci": "npm run typecheck && npm run codegen:api && npm run test"
+    "ci": "npm run codegen:api && npm run typecheck && npm run test"
   },
   "dependencies": {
     "@hey-api/openapi-ts": "0.99.0",
